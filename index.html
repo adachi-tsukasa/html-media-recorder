@@ -3,9 +3,9 @@
   <head>
     <meta charset="utf-8" />
     <script>
+      var current;
+      var checkpoints = [];
       function hoge() {
-        var current;
-        var checkpoints = [];
         var video = document.getElementById("my-video");
 
         video.addEventListener("timeupdate", function ({ target }) {
