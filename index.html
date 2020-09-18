@@ -2,9 +2,33 @@
 <html lang="ja" dir="ltr" itemscope itemtype="http://schema.org/Article">
   <head>
     <meta charset="utf-8" />
+    <script>
+      function hoge() {
+        var video = document.getElementById("my-video"); // added for clarity: this is needed
+
+        video.addEventListener("timeupdate", function () {
+          generateThumbnail();
+        });
+
+        function generateThumbnail() {
+          alert("gene");
+          var thecanvas = document.getElementById("canvas");
+          var video = document.getElementById("my-video");
+          var context = thecanvas.getContext("2d");
+          context.drawImage(video, 0, 0, 220, 150);
+          var dataURL = thecanvas.toDataURL();
+
+          var img = document.createElement("img");
+          img.setAttribute("src", dataURL);
+          console.log(img);
+          document.getElementById("thumbnailContainer").appendChild(img);
+          thecanvas = null;
+        }
+      }
+    </script>
   </head>
-  <body>
-    <div class="camera">
+  <body onload="hoge();">
+    <!-- <div class="camera">
       <video id="video">Video stream not available.</video>
     </div>
     <br />
@@ -15,12 +39,18 @@
     <form action="server.cgi" method="post" enctype="multipart/form-data">
       <input type="file" name="video" accept="video/*" capture="environment" />
       <input type="submit" value="Upload" />
-    </form>
+    </form> -->
+
+    <video id="my-video" src="./myvideo.mp4" controls></video>
+
+    <div id="thumbnailContainer"></div>
+
+    <canvas id="canvas" style="display: none"></canvas>
 
     <div>
       <video id="test"></video>
     </div>
-    <script>
+    <!-- <script>
       let width = 320; // We will scale the photo width to this
       let height = 0; // This will be computed based on the input stream
 
@@ -126,6 +156,6 @@
       }
 
       startup();
-    </script>
+    </script> -->
   </body>
 </html>
