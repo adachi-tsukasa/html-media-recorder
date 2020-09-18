@@ -5,16 +5,22 @@
     <script>
       function hoge() {
         var current;
-        var video = document.getElementById("my-video"); // added for clarity: this is needed
+        var checkpoints = [];
+        var video = document.getElementById("my-video");
 
         video.addEventListener("timeupdate", function ({ target }) {
-          this.current = target;
+          this.current = target.currentTime;
           generateThumbnail();
         });
 
-        video.addEventListener("loadedmetadata", function () {
+        video.addEventListener("loadedmetadata", function ({ target }) {
           console.log("loadedmetadata");
           video.playbackRate = 10;
+          var splitSec = video.duration / 5;
+          for (let i = 0; i < 5; i++) {
+            this.checkpoints.push(splitSec * (i + 1));
+          }
+          console.log(checkpoints);
         });
 
         function generateThumbnail() {
