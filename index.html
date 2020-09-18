@@ -12,7 +12,7 @@
 
         video.addEventListener("timeupdate", function ({ target }) {
           current = target.currentTime;
-          if (makeTimeline && current < checkpoints[checkpointCounter]) {
+          if (makeTimeline && current > checkpoints[checkpointCounter]) {
             console.log(current);
             generateThumbnail();
             checkpointCounter++;
