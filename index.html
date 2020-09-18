@@ -1,166 +1,145 @@
 <!DOCTYPE html>
-<html lang="ja" dir="ltr" itemscope itemtype="http://schema.org/Article">
+<html lang="en">
   <head>
-    <meta charset="utf-8" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.19.1/TweenMax.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.20.0/utils/Draggable.min.js"></script>
+
     <script>
-      function hoge() {
-        var video = document.getElementById("my-video"); // added for clarity: this is needed
+      var video = document.getElementsByTagName("video")[0],
+        play = document.getElementsByClassName("video__play")[0],
+        timeline = document.getElementsByClassName("timeline")[0],
+        timelineProgress = document.getElementsByClassName(
+          "timeline__progress"
+        )[0],
+        drag = document.getElementsByClassName("timeline__drag")[0];
 
-        video.addEventListener("timeupdate", function () {
-          generateThumbnail();
-        });
+      // Toggle Play / Pause
+      play.addEventListener("click", togglePlay, false);
 
-        function generateThumbnail() {
-          var thecanvas = document.getElementById("canvas");
-          var video = document.getElementById("my-video");
-          var context = thecanvas.getContext("2d");
-          context.drawImage(video, 0, 0, 220, 150);
-          var dataURL = thecanvas.toDataURL();
-
-          var img = document.createElement("img");
-          img.setAttribute("src", dataURL);
-          console.log(img);
-          document.getElementById("thumbnailContainer").appendChild(img);
-          thecanvas = null;
+      function togglePlay() {
+        if (video.paused) {
+          video.play();
+        } else {
+          video.pause();
         }
       }
-    </script>
-  </head>
-  <body onload="hoge();">
-    <!-- <div class="camera">
-      <video id="video">Video stream not available.</video>
-    </div>
-    <br />
-    <button id="startbutton">start!!</button
-    ><button id="stopbutton">stop!!</button
-    ><button id="download">download!!</button><br />
 
-    <form action="server.cgi" method="post" enctype="multipart/form-data">
-      <input type="file" name="video" accept="video/*" capture="environment" />
-      <input type="submit" value="Upload" />
-    </form> -->
+      // on interaction with video controls
+      video.onplay = function () {
+        TweenMax.ticker.addEventListener("tick", vidUpdate);
+      };
+      video.onpause = function () {
+        TweenMax.ticker.removeEventListener("tick", vidUpdate);
+      };
+      video.onended = function () {
+        TweenMax.ticker.removeEventListener("tick", vidUpdate);
+      };
 
-    <video
-      id="my-video"
-      src="./myvideo.mp4"
-      controls
-      style="display: none"
-      autoplay
-    ></video>
-
-    <div id="thumbnailContainer"></div>
-
-    <canvas id="canvas" style="display: none"></canvas>
-
-    <div>
-      <video id="test"></video>
-    </div>
-    <!-- <script>
-      let width = 320; // We will scale the photo width to this
-      let height = 0; // This will be computed based on the input stream
-
-      let streaming = false;
-
-      let video = null;
-      let canvas = null;
-      let photo = null;
-      let startbutton = null;
-      let constrains = { video: true, audio: true };
-      let recorder = null;
-      let record_data = [];
-
-      /**
-       * ユーザーのデバイスによるカメラ表示を開始し、
-       * 各ボタンの挙動を設定する
-       *
-       */
-      function startup() {
-        video = document.getElementById("video");
-        canvas = document.getElementById("canvas");
-        photo = document.getElementById("photo");
-        startbutton = document.getElementById("startbutton");
-        stopbutton = document.getElementById("stopbutton");
-        downloadbutton = document.getElementById("download");
-
-        videoStart();
-
-        video.addEventListener(
-          "canplay",
-          function (ev) {
-            if (!streaming) {
-              height = video.videoHeight / (video.videoWidth / width);
-
-              video.setAttribute("width", width);
-              video.setAttribute("height", height);
-              streaming = true;
-            }
-          },
-          false
-        );
-
-        startRecorder();
-
-        // 「start」ボタンをとる挙動を定義
-        startbutton.addEventListener(
-          "click",
-          function (ev) {
-            recorder.start();
-            ev.preventDefault();
-          },
-          false
-        );
-
-        stopbutton.addEventListener("click", function (ev) {
-          recorder.stop();
+      // Sync the timeline with the video duration
+      function vidUpdate() {
+        TweenMax.set(timelineProgress, {
+          scaleX: (video.currentTime / video.duration).toFixed(5),
         });
-
-        downloadbutton.addEventListener("click", function (ev) {
-          console.log(record_data);
-          var blob = new Blob(record_data, { type: "video/webm" });
-          var url = window.URL.createObjectURL(blob);
-          var a = document.createElement("a");
-          document.body.appendChild(a);
-          a.style = "display:none";
-          a.href = url;
-          a.download = "test.webm";
-          a.click();
-          window.URL.revokeObjectURL(url);
+        TweenMax.set(drag, {
+          x: (
+            (video.currentTime / video.duration) *
+            timeline.offsetWidth
+          ).toFixed(4),
         });
       }
 
-      /**
-       * カメラ操作を開始する
-       */
-      function videoStart() {
-        streaming = false;
-        console.log(streaming);
-        navigator.mediaDevices
-          .getUserMedia(constrains)
-          .then(function (stream) {
-            video.srcObject = stream;
-            video.play();
-          })
-          .catch(function (err) {
-            console.log("An error occured! " + err);
+      // Make the timeline draggable
+      Draggable.create(drag, {
+        type: "x",
+        trigger: timeline,
+        bounds: timeline,
+        onPress: function (e) {
+          video.currentTime = (this.x / this.maxX) * video.duration;
+          TweenMax.set(this.target, {
+            x: this.pointerX - timeline.getBoundingClientRect().left,
           });
+          this.update();
+          var progress = this.x / timeline.offsetWidth;
+          TweenMax.set(timelineProgress, {
+            scaleX: progress,
+          });
+        },
+        onDrag: function () {
+          video.currentTime = (this.x / this.maxX) * video.duration;
+          var progress = this.x / timeline.offsetWidth;
+          TweenMax.set(timelineProgress, {
+            scaleX: progress,
+          });
+        },
+        onRelease: function (e) {
+          e.preventDefault();
+        },
+      });
+    </script>
+    <style>
+      video {
+        display: block;
+        width: 100%;
+        height: auto;
       }
 
-      function startRecorder() {
-        navigator.mediaDevices.getUserMedia(constrains).then(function (stream) {
-          recorder = new MediaRecorder(stream);
-          recorder.ondataavailable = function (e) {
-            var testvideo = document.getElementById("test");
-            testvideo.setAttribute("controls", "");
-            testvideo.setAttribute("width", width);
-            testvideo.setAttribute("height", height);
-            var outputdata = window.URL.createObjectURL(e.data);
-            record_data.push(e.data);
-            testvideo.src = outputdata;
-          };
-        });
+      video,
+      .timeline {
+        max-width: 50em;
       }
 
-      startup();
-    </script> -->
+      .timeline {
+        width: 100%;
+        height: 10px;
+        background-color: black;
+        cursor: pointer;
+        position: relative;
+      }
+
+      /* Here is the dragger that I will use to move the video 
+* current time forward or backward.
+* I have added a background color for you to see it
+* but just remove it in production.
+*/
+
+      .timeline__drag {
+        width: 1px;
+        height: 20px;
+        top: -10px;
+        background-color: yellow;
+        position: absolute;
+        z-index: 2;
+        transform-origin: 0 0;
+      }
+
+      .timeline__progress {
+        display: block;
+        width: 100%;
+        height: 100%;
+        background-color: green;
+        transform: scaleX(0);
+        transform-origin: 0 0;
+        position: relative;
+        z-index: 1;
+      }
+
+      button {
+        margin-top: 2em;
+      }
+    </style>
+  </head>
+  <body>
+    <video>
+      <source src="./myvideo.mp4" type="video/mp4" />
+    </video>
+    <div class="timeline">
+      <div class="timeline__drag"></div>
+      <span class="timeline__progress"></span>
+    </div>
+    <button class="video__play">Play / Pause video</button>
   </body>
 </html>
