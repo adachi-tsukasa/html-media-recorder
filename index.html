@@ -7,12 +7,12 @@
         var current;
         var checkpoints = [];
         var checkpointCounter = 0;
-        var makeTimeline = false;
+        var makeTimeline = true;
         var video = document.getElementById("my-video");
 
         video.addEventListener("timeupdate", function ({ target }) {
           current = target.currentTime;
-          if (current > checkpoints[checkpointCounter]) {
+          if (makeTimeline && current > checkpoints[checkpointCounter]) {
             generateThumbnail();
             checkpointCounter++;
           }
@@ -21,7 +21,7 @@
         video.addEventListener("loadedmetadata", function ({ target }) {
           console.log("loadedmetadata");
           video.playbackRate = 10;
-          var splitSec = video.duration / 5;
+          var splitSec = video.duration / 4.9;
           for (let i = 0; i < 5; i++) {
             checkpoints.push(splitSec * (i + 1));
           }
