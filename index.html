@@ -6,6 +6,7 @@
       function hoge() {
         var current;
         var checkpoints = [];
+        var video = document.getElementById("my-video");
 
         video.addEventListener("timeupdate", function ({ target }) {
           this.current = target.currentTime;
@@ -15,7 +16,6 @@
         video.addEventListener("loadedmetadata", function ({ target }) {
           console.log("loadedmetadata");
           video.playbackRate = 10;
-          var video = document.getElementById("my-video");
           var splitSec = video.duration / 5;
           for (let i = 0; i < 5; i++) {
             checkpoints.push(splitSec * (i + 1));
