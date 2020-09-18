@@ -4,14 +4,20 @@
     <meta charset="utf-8" />
     <script>
       function hoge() {
+        var current;
         var video = document.getElementById("my-video"); // added for clarity: this is needed
 
-        video.addEventListener("timeupdate", function () {
+        video.addEventListener("timeupdate", function ({ target }) {
+          this.current = target;
           generateThumbnail();
         });
 
+        video.addEventListener("loadedmetadata", function () {
+          console.log("loadedmetadata");
+          video.playbackRate = 10;
+        });
+
         function generateThumbnail() {
-          alert("gene");
           var thecanvas = document.getElementById("canvas");
           var video = document.getElementById("my-video");
           var context = thecanvas.getContext("2d");
@@ -21,8 +27,11 @@
 
           var img = document.createElement("img");
           img.setAttribute("src", dataURL);
+          var label = document.createElement("img");
+          label.nodeValue = this.current;
 
           document.getElementById("thumbnailContainer").appendChild(img);
+          document.getElementById("thumbnailContainer").appendChild(label);
         }
       }
     </script>
@@ -41,7 +50,9 @@
       <input type="submit" value="Upload" />
     </form> -->
 
-    <video id="my-video" src="./myvideo.mp4" controls></video>
+    <video id="my-video" controls autoplay>
+      <source src="./myvideo.mp4" />
+    </video>
 
     <div id="thumbnailContainer"></div>
 
