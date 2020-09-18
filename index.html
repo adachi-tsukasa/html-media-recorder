@@ -6,11 +6,16 @@
       function hoge() {
         var current;
         var checkpoints = [];
+        var checkpointCounter = 0;
+        var makeTimeline = false;
         var video = document.getElementById("my-video");
 
         video.addEventListener("timeupdate", function ({ target }) {
-          this.current = target.currentTime;
-          generateThumbnail();
+          current = target.currentTime;
+          if (current > checkpoints[checkpointCounter]) {
+            generateThumbnail();
+            checkpointCounter++;
+          }
         });
 
         video.addEventListener("loadedmetadata", function ({ target }) {
@@ -34,7 +39,7 @@
           var img = document.createElement("img");
           img.setAttribute("src", dataURL);
           var label = document.createElement("img");
-          label.nodeValue = this.current;
+          label.nodeValue = current;
 
           document.getElementById("thumbnailContainer").appendChild(img);
           document.getElementById("thumbnailContainer").appendChild(label);
